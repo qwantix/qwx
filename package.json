@@ -1,0 +1,23 @@
+{
+  "name": "qwx",
+  "version": "0.1.0",
+  "description": "Minimalist bootloader for node",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Brice Dauzats",
+  "license": "MIT",
+  "keywords": [
+    "bootloader",
+    "utility",
+    "module"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qwantix/qwx.git"
+  },
+   "bugs": {
+    "url": "https://github.com/qwantix/qwx/issues"
+  }
+}
