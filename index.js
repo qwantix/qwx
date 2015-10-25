@@ -9,7 +9,7 @@ var defaultOptions = {
   mask: /^[^._]/, // Ignore file start with "." or "_",
   maxDepth: 15,
   debug: false,
-  forkRespawn: true
+  forkRespawn: false
 };
 
 function callAsyncHandler( target, handler, $delayedHandler ) {
