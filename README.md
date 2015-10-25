@@ -212,7 +212,7 @@ Project sample
 
 For project structure like
 ```
-    /app
+    /src
         /config
             production.js
         /lib
@@ -224,6 +224,7 @@ For project structure like
         /services
             /server.js
             /sync.js
+    index.js
 ```
 
 For example in server you can use an `express` server

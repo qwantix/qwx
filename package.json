@@ -1,6 +1,6 @@
 {
   "name": "qwx",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Minimalist bootloader for node",
   "main": "index.js",
   "scripts": {
