@@ -235,7 +235,7 @@ var methods = {
       this._pipeline.push( name );
       return this;
     }
-    if( !this[name] ) {
+    if( !this._resolve( name ) ) {
       this.mount( name );
     }
     this._pipeline.push( function() {
