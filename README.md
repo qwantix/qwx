@@ -32,6 +32,11 @@ new models.extras.C()
 
 **Qwx** permit to use cluster mode natively, and you can scale down or scale up your app on demand!
 
+Installation
+========
+
+    npm install qwx
+
 
 Ok, how to use
 ============
@@ -58,14 +63,48 @@ require('qwx')('myApp')
 ```
 
 
+Construct
+===========
+`require('qwx')` return factory to Qwx with signature `Qwx( name[, options ] )`
+
+To create new app instance:
+```javascript
+require('qwx')('myApp');
+```
+
+After this, you can retrieve instance of your app on global variable `myApp` 
+`myApp` becomes the root mount point of your application
+
 Methods
 ========
+
+All methods execpt getter `option` and `options` are chained and return app instance.
+
 
 ## mount( directory )
 Mount directory structure, alias of `mount( directory, directory )`
 
 ## mount( mountPoint, directory )
 Mount `directory` on `mountPoint`
+
+    /src/
+        /models
+            /api
+                A.js
+                B.js
+
+
+```javascript
+.mount('models.api','src/models/api')
+```
+
+You can retrieve your models like this,
+```javascript
+models.api.A // model A
+models.api.B // model B
+```
+
+_Note: See `appDir` to simplify things_
 
 ## mount( mountPoint, handler )
 Mount `handler` on `mountPoint`
@@ -96,11 +135,11 @@ For file structure like
             /b.js
 ```
 ```javascript
-.run('services.a') // Execute a
+.run('services/a') // Execute only a
 .run('services') // Execute a and b
 ```
 
-_Note:_ If mount point isn't mounted, `run` will call `mount` before
+_Note: If mount point isn't mounted, `run` will call `mount` before_
 
 ## option( name[, value] )
 Get or set option
@@ -138,7 +177,7 @@ you can..
 ### mask
 Mask to match file or directory
 By default is set to `/^[^._]/`, ignore file staring with "." or "_"
-_Note:_ mask must be a regex object
+_Note: mask must be a regex object_
 
 ### maxDepth
 Depth limitation to mount directories, 15 by default
@@ -203,7 +242,7 @@ Example:
 })
 ```
 
-_Note:_ Only master process can scale app.
+_Note: Only master process can scale app._
 
 
 Project sample
@@ -229,15 +268,28 @@ For project structure like
 
 For example in server you can use an `express` server
 
+
+And in index.js :
+
 ```javascript
-require('qwx')('app')
-    .option('appDir', 'src' )
+require('qwx')('app') // Mount Qwx instance on global.app
+    .option('appDir', 'src' ) // Files are in src
     .mount('config', require('config') ) // Mount package "config"
-    .mount('lib')
-    .mount('models')
-    .mount('controllers')
-    .run( function doConnection( $ ) {
-        app.lib.mysql.initConnection();
+    .mount('lib') // Mount lib directory
+    .mount('models') // Mount models
+    .mount('controllers') // Mount controllers
+    .run( function doConnection( $doConnectionDone ) {
+        app.lib.mysql.initConnection( function( err ) {
+            if( err ) {
+                console.error( 'Unable to connect to database', err );
+                process.exit();
+            }
+            // Connection ok, next!
+            $doConnectionDone();
+        } );
+    })
+    .run( function( ) {
+        console.log('Pipeline complete, running services!');
     })
     .run('services') 
     // Start server service and some sync service
