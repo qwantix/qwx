@@ -216,7 +216,7 @@ var methods = {
           fork = cluster.fork();
           fork
             .on('exit', function() {
-              if( self.option('respawn') ) {
+              if( self.option('forkRespawn') ) {
                 process.nextTick( function(){
                   self.scale();
                 });
