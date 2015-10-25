@@ -40,6 +40,16 @@ function setReadonly( obj, name, value ) {
   });
 }
 
+function fileExistsSync( fn ) {
+  try {
+    fs.accessSync( fn );
+  }
+  catch( e ) {
+    return false;
+  }
+  return true;
+}
+
 function Pipeline( appName ) {
   this._appName = appName;
   this._stack = [];
@@ -124,11 +134,14 @@ var methods = {
       appDir = path.normalize(appDir.replace(/(^[^\/]+)/, process.cwd() + '/$1' ));
       dir = path.join( appDir, dir );
       mountPoint = mountPoint.replace(/[\/\\]+/,'.');
-      try {
-        fs.accessSync( dir );
-      }
-      catch( e ) {
-        return this;
+      if( !fileExistsSync( dir ) ) {
+        if( fileExistsSync( dir + '.js' ) ) { // Try with .js extension
+          dir += '.js'; // OK .js was ommited
+        }
+        else {
+          log( this, 'Unable to mount', dir,': not found');
+          return this; // Ignore
+        }
       }
       function mount( mountPoint, pth, limit ) {
         var fStat = fs.lstatSync( pth );
