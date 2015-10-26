@@ -6,6 +6,7 @@ var cluster = require('cluster');
 
 var defaultOptions = {
   appDir: '.',
+  rootMountPoint: '',
   mask: /^[^._]/, // Ignore file start with "." or "_",
   maxDepth: 15,
   debug: false,
@@ -343,6 +344,6 @@ module.exports = function( name, options ) {
     throw 'Unable to mount app to "'+name+'"';
   }
   var qwx = new Qwx( name, options );
-  global[name] = qwx;
+  global[ qwx._opts.rootMountPoint ||  name ] = qwx;
   return qwx;
 };
