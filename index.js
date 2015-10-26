@@ -6,12 +6,14 @@ var cluster = require('cluster');
 
 var defaultOptions = {
   appDir: '.',
-  rootMountPoint: '',
+  appRoot: null,
   mask: /^[^._]/, // Ignore file start with "." or "_",
   maxDepth: 15,
   debug: false,
   forkRespawn: false
 };
+
+var intances = {};
 
 function callAsyncHandler( target, handler, $delayedHandler ) {
   if( handler.length === 1 ) {
@@ -28,7 +30,7 @@ function callAsyncHandler( target, handler, $delayedHandler ) {
 
 function log( obj ) {
   if( obj._opts.debug ) {
-    console.log.apply( console, ['[Qwx:'+ ( cluster.isMaster ? 'master' : cluster.worker.id ) +']'].concat( Array.prototype.slice.call( arguments, 1 )) );
+    console.log.apply( console, ['['+ obj.name + ':' + ( cluster.isMaster ? 'master' : cluster.worker.id ) +']'].concat( Array.prototype.slice.call( arguments, 1 )) );
   }
 }
 
@@ -70,7 +72,7 @@ Pipeline.prototype = {
       return;
     }
     this._current = stage;
-    callAsyncHandler( global[this._appName], stage, function() {
+    callAsyncHandler( intances[this._appName], stage, function() {
       this._current = null; //release current
       process.nextTick( function() {
         this.consume();
@@ -319,14 +321,13 @@ var methods = {
 });
 
 function Qwx( name, options ) {
-  this._opts = defaultOptions; // Copy defaults
   var k;
+  this._opts = {};
+  for( k in defaultOptions ) { this._opts[k] = defaultOptions[k] };
   if( options ) {
-    for( k in options ) {
-      this._opts[ k ] = options[ k ];
-    }
+    for( k in options ) { this._opts[ k ] = options[ k ]; }
   }
-  log( this, 'Init new qwx app' );
+  this._opts.appRoot = this._opts.appRoot || name;
   this._pipeline = new Pipeline( name );
   this._clusterScalingOffset = 0;
   setReadonly( this, 'name', name );
@@ -334,16 +335,18 @@ function Qwx( name, options ) {
   for(  k in methods ) {
     setReadonly( this, k, methods[k] );
   }
+  log( this, 'Init new qwx app' );
+  log( this, 'Mount on', this._opts.appRoot )
+  global[ this._opts.appRoot ] = intances[ name ] = this; // Register and mount on appRoot!
 }
 
 module.exports = function( name, options ) {
-  if( global[name] ) {
-    if( global[name] instanceof Qwx ) {
-      return global[name];
+  var appRoot = ( options ? options.appRoot : '' ) || name;
+  if( global[ appRoot ] ) {
+    if( global[ appRoot ] instanceof Qwx ) {
+      return global[ appRoot ];
     }
-    throw 'Unable to mount app to "'+name+'"';
+    throw 'Unable to mount app to "'+appRoot+'"';
   }
-  var qwx = new Qwx( name, options );
-  global[ qwx._opts.rootMountPoint ||  name ] = qwx;
-  return qwx;
+  return new Qwx( name, options );
 };
