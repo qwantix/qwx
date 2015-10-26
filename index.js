@@ -298,8 +298,10 @@ var methods = {
     return o;
   },
 };
+
 //Project methods for clustering
-Object.keys( methods ).forEach(function( name ) {
+['option','options','mount','mountObject','mountDir','run']
+.forEach(function( name ) {
   var nameCap = name[0].toUpperCase() + name.slice(1);
   methods[ 'master' + nameCap ] = function() {
     if( cluster.isMaster ) {
