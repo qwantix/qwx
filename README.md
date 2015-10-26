@@ -177,6 +177,9 @@ you can..
 .mount('services');
 ```
 
+### appRoot
+Define custom root mount point. By default app name is used as appRoot
+
 ### mask
 Mask to match file or directory
 By default is set to `/^[^._]/`, ignore file staring with "." or "_"
