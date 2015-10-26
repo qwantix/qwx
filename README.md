@@ -32,6 +32,9 @@ new models.extras.C()
 
 **Qwx** permit to use cluster mode natively, and you can scale down or scale up your app on demand!
 
+[![npm status](https://nodei.co/npm/qwx.svg?downloads=true&stars=true&downloadRank=true)](https://npmjs.org/package/qwx)
+
+
 Installation
 ========
 
