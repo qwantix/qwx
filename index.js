@@ -113,8 +113,7 @@ var methods = {
       return this.mountDir.apply( this, a );
     }
     else if( a.length === 2 
-      && typeof a[0] === 'string' 
-      && typeof a[1] === 'function' ) {
+      && typeof a[0] === 'string' ) {
       return this.mountObject.apply( this, a );
     }
     throw new Error('Unknow mount function signature');
