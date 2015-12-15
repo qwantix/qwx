@@ -17,7 +17,8 @@
     "type": "git",
     "url": "https://github.com/qwantix/qwx.git"
   },
-   "bugs": {
+  "bugs": {
     "url": "https://github.com/qwantix/qwx/issues"
-  }
+  },
+  "dependencies": {}
 }
