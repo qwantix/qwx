@@ -103,7 +103,21 @@ var methods = {
     });
     return this;
   },
-
+  context: function( name, opts, merge ) {
+    opts = opts || {};
+    if( merge === 'new' ) {
+      opts = opts || {};
+    }
+    else { // inherit
+      for( var k in this._opts ) {
+        opts[k] = k in opts ? opts[k] : this._opts[k];
+      }
+    }
+    opts.appName = opts.appName || this.name; // Force app name
+    var app = new Qwx( name, opts );
+    setReadonly( app, '_parent', this );
+    return app;
+  },
   mount: function( ) {
     var a = arguments;
     if( a.length === 1 
@@ -158,6 +172,7 @@ var methods = {
         }
         else if( /\.js(on)?$/.test( pth  ) ) {
           pth = pth.charAt(0) === '/' ? pth : './' + pth ;
+          log( self, 'file', pth);
           self._mountObject( mountPoint.replace(/\.js(on)?$/,''), function() {
             return require( pth );
           }, 'lazyFunction' );
@@ -284,7 +299,7 @@ var methods = {
   _getMountPoint: function( mountPoint, asObject ) {
     var toks = mountPoint.split(/[.\/\\]+/);
     var name;
-    var o = this;
+    var o = global[ this._opts.appRoot ];
     var tok;
     if( asObject ) {
       name = toks.pop();
@@ -336,8 +351,11 @@ function Qwx( name, options ) {
     setReadonly( this, k, methods[k] );
   }
   log( this, 'Init new qwx app' );
-  log( this, 'Mount on', this._opts.appRoot )
-  global[ this._opts.appRoot ] = intances[ name ] = this; // Register and mount on appRoot!
+  intances[ name ] = intances[ name ] || this;
+  if( !global[ this._opts.appRoot ] ) {
+    log( this, 'Mount on', this._opts.appRoot )
+    global[ this._opts.appRoot ] = this; // Register and mount on appRoot!
+  }
 }
 
 module.exports = function( name, options ) {
