@@ -286,7 +286,7 @@ var methods = {
 
   _resolve: function( mountPoint ) {
     var toks = mountPoint.split(/[.\/\\]+/);
-    var o = this;
+    var o = global[ this._opts.appRoot ];
     var tok;
     while( tok = toks.shift() ) {
       if( !o[tok] ) {
@@ -296,6 +296,7 @@ var methods = {
     }
     return o;
   },
+
   _getMountPoint: function( mountPoint, asObject ) {
     var toks = mountPoint.split(/[.\/\\]+/);
     var name;
