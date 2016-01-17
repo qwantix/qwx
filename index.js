@@ -10,7 +10,8 @@ var defaultOptions = {
   mask: /^[^._]/, // Ignore file start with "." or "_",
   maxDepth: 15,
   debug: false,
-  forkRespawn: false
+  forkRespawn: false,
+  scope: global
 };
 
 var intances = {};
@@ -41,6 +42,15 @@ function setReadonly( obj, name, value ) {
     enumerable: true,
     configurable: false
   });
+}
+
+function scope( scope, name, value ) {
+  if( arguments.length === 3 ) {
+    name ? (scope[name] = value) : (scope = value);
+  }
+  else {
+    return name ? scope[name] : scope;
+  }
 }
 
 function fileExistsSync( fn ) {
@@ -103,16 +113,14 @@ var methods = {
     });
     return this;
   },
-  context: function( name, opts, merge ) {
+  context: function( name, opts, inherit ) {
     opts = opts || {};
-    if( merge === 'new' ) {
-      opts = opts || {};
-    }
-    else { // inherit
+    if( inherit || arguments.length < 3 ) { // inherit by default
       for( var k in this._opts ) {
         opts[k] = k in opts ? opts[k] : this._opts[k];
       }
     }
+    log(this, 'Create context', name );
     opts.appName = opts.appName || this.name; // Force app name
     var app = new Qwx( name, opts );
     setReadonly( app, '_parent', this );
@@ -286,7 +294,7 @@ var methods = {
 
   _resolve: function( mountPoint ) {
     var toks = mountPoint.split(/[.\/\\]+/);
-    var o = global[ this._opts.appRoot ];
+    var o = scope( this._scope, this._opts.appRoot );
     var tok;
     while( tok = toks.shift() ) {
       if( !o[tok] ) {
@@ -300,7 +308,7 @@ var methods = {
   _getMountPoint: function( mountPoint, asObject ) {
     var toks = mountPoint.split(/[.\/\\]+/);
     var name;
-    var o = global[ this._opts.appRoot ];
+    var o = scope( this._scope, this._opts.appRoot );
     var tok;
     if( asObject ) {
       name = toks.pop();
@@ -346,6 +354,7 @@ function Qwx( name, options ) {
   this._opts.appRoot = this._opts.appRoot || name;
   this._pipeline = new Pipeline( name );
   this._clusterScalingOffset = 0;
+  this._scope = this._opts.scope instanceof Qwx ? this._opts.scope._scope : this._opts.scope;
   setReadonly( this, 'name', name );
   setReadonly( this, 'forkId', cluster.worker ? cluster.worker.id : 0 );
   for(  k in methods ) {
@@ -353,17 +362,21 @@ function Qwx( name, options ) {
   }
   log( this, 'Init new qwx app' );
   intances[ name ] = intances[ name ] || this;
-  if( !global[ this._opts.appRoot ] ) {
-    log( this, 'Mount on', this._opts.appRoot )
-    global[ this._opts.appRoot ] = this; // Register and mount on appRoot!
+  if( !scope( this._scope, this._opts.appRoot ) ) {
+    log( this, 'Mount on', this._opts.appRoot );
+    scope( this._scope, this._opts.appRoot, this ); // Register and mount on appRoot!
   }
 }
 
 module.exports = function( name, options ) {
+  if( options.scope && options.scope instanceof Qwx ) {
+    return options.scope.context( name, options, true );
+  }
   var appRoot = ( options ? options.appRoot : '' ) || name;
-  if( global[ appRoot ] ) {
-    if( global[ appRoot ] instanceof Qwx ) {
-      return global[ appRoot ];
+  var appScope = ( options ? options.scope : global ) || global;
+  if( scope( appScope, appRoot ) ) {
+    if( scope( appScope, appRoot ) instanceof Qwx ) {
+      return scope( appScope, appRoot );
     }
     throw 'Unable to mount app to "'+appRoot+'"';
   }

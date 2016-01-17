@@ -4,7 +4,7 @@ Qwx
 **Qwx** minimalist bootloader for node
 
 * With only 2 methods you can up your app
-* Concise, ~350 lines of code
+* Concise, ~380 lines of code
 * No externals dependencies
 * Cluster support
 * Asynchronous app loading
@@ -207,6 +207,10 @@ A derived use from it, is to autoreload app on error.
 .forkRun('services') // Execute all services without service interruption!
 ```
 
+### scope
+Object where root app property will be injected default to `global`
+This option are used when you code an external qwx lib. *Sample code coming soon*.
+
 ## options( [ options ] )
 Get or set options map
 ```javascript
@@ -229,6 +233,13 @@ You can set `"full"` to use all machine processors
 .scale(1) // Scale down
 .scale('full') //Scale to 4 on the quad core processor
 ```
+
+## context( name, opts, mergeMode )
+**Experimental**, isolate new mount pipeline in special context, used to create external qwx lib.
+* `name`: context name
+* `opts`: new options
+* `mergeMode`: `"new"` or `"inherit"`(default), define  how to `opts` is defined  
+
 
 Clustering
 ==========
