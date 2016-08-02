@@ -14,7 +14,8 @@ var defaultOptions = {
   scope: global
 };
 
-var intances = {};
+global.__qwx_instances = global.__qwx_instances || {};
+var intances = global.__qwx_instances;
 
 function callAsyncHandler( target, handler, $delayedHandler ) {
   if( handler.length === 1 ) {
@@ -327,22 +328,24 @@ var methods = {
 };
 
 //Project methods for clustering
-['option','options','mount','mountObject','mountDir','run']
-.forEach(function( name ) {
-  var nameCap = name[0].toUpperCase() + name.slice(1);
-  methods[ 'master' + nameCap ] = function() {
-    if( cluster.isMaster ) {
-      return methods[ name ].apply( this, arguments );  
-    }
-    return this;
-  };
-  methods[ 'fork' + nameCap ] = function() {
-    if( cluster.isWorker ) {
-      return methods[ name ].apply( this, arguments );
-    }
-    return this;
-  };
-});
+[['master','isMaster'],['fork','isWorker']]
+  .forEach( function( m ) {
+    methods[ m[0] ] = function( forkHandler ) {
+      if( cluster[ m[1] ] ) {
+        forkHandler( this );
+      }
+    };
+    ['option','options','mount','mountObject','mountDir','run']
+      .forEach(function( name ) {
+        var nameCap = name[0].toUpperCase() + name.slice(1);
+        methods[ m[0] + nameCap ] = function() {
+          if( cluster[ m[1] ] ) {
+            return methods[ name ].apply( this, arguments );  
+          }
+          return this;
+        };
+      });
+  });
 
 function Qwx( name, options ) {
   var k;

@@ -6,9 +6,9 @@ Qwx
 * With only 2 methods you can up your app
 * Concise, ~380 lines of code
 * No externals dependencies
-* Cluster support
+* Cluster support ( and easy to use! )
 * Asynchronous app loading
-* Memory optimized
+* Memory optimized, packages are lazy loaded
 * Bye bye `require` with `../../../`
 
 **Qwx** provide an application mount pipeline, it virtualy mount your files structure as a lazy object.
@@ -38,7 +38,7 @@ new models.extras.C()
 Installation
 ========
 
-    npm install qwx
+    npm install --save qwx
 
 
 Ok, how to use
@@ -243,12 +243,29 @@ You can set `"full"` to use all machine processors
 
 Clustering
 ==========
-You can isolate action between master and fork ( also called worker ) by prefixing your method by `master` or `fork`
+You can isolate action between master and fork ( also called worker ) by calling method `master` or `fork`, or prefixing your method by `master` or `fork` ( deprecated )
 
 Example:
 
 ```javascript
 .scale( 2 ) // create 2 forks
+.fork(function( forkApp ) {
+    // execute only on fork
+    forkApp
+        .option( ... )
+        .mount( ... )
+        .run( ... )
+})
+// ES6 style is more fun!
+.master( masterApp => {
+    // execute only on master
+    masterApp
+        .option( ... )
+        .mount( ... )
+        .run( ... )
+})
+
+
 .forkOption('appDir', 'worker') // Set specific fork appdir
 .masterMount( 'myMasterMount' ) // Only mount for master thread
 .run(function(){
@@ -257,7 +274,10 @@ Example:
 .forkRun( function() {
     // Running only on fork
 })
+
 ```
+
+
 
 _Note: Only master process can scale app._
 
