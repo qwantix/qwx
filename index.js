@@ -372,7 +372,7 @@ function Qwx( name, options ) {
 }
 
 module.exports = function( name, options ) {
-  if( options.scope && options.scope instanceof Qwx ) {
+  if( options && options.scope && options.scope instanceof Qwx ) {
     return options.scope.context( name, options, true );
   }
   var appRoot = ( options ? options.appRoot : '' ) || name;
